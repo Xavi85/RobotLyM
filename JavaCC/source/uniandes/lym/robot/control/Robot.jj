@@ -26,7 +26,8 @@ package uniandes.lym.robot.control;
 
 import uniandes.lym.robot.kernel.*;
 import uniandes.lym.robot.view.Console;
- 
+
+import java.util.hasmap; 
 import java.awt.Point;
 import java.io.*;
 import java.util.Vector;
@@ -51,28 +52,37 @@ PARSER_END(Robot)
 SKIP:
 {
 	" "
-	|	"\r"
-	|	"\t"
+	|"\r"
+	|"\t"
 	| "\n"
 }
 
 TOKEN: /* Nombres de Comandos */
 {
-
-			<MOV:  "Mov">
-		| 	<RIGHT: "RIGHT">
-		| 	<PUT: "Put">
-		| 	<PICK: "Pick">
-		|  < POP: "Pop" >
-		|  <GO: "GO" >
-        |  < HOP:  "HOP" >		
-
+		<WALK:  "walk">
+		| < OPEN : "PROG">
+		| < CLOSE : "GROP">
+		| < OPROGRAM: "PROC">
+		| < CPROGRAM: "CROP">
+		| < VAR: "VAR">
+		| < BRACKETO: "(">
+		| < BRACKETC: ")">
+		| < CURBRACKETO: "{">
+		| < CURBRACKETC: "}">
+		| < COMMA: ",">
+		| < IF: "if">
+		| < FI: "fi">
+		| < DO: "do">
+		| < OD: "od">
+		| < ELSE: "else">
+		| < WHILE: "while">
+		| < REPEAT: "repeat">
 }
 
 TOKEN:
 {
 		<BALLOONS:  "BALLOONS" >
-		|	<CHIPS:     "CHIPS"  >	
+		|<CHIPS:     "CHIPS"  >	
 
 }
 
@@ -81,12 +91,46 @@ TOKEN:
 TOKEN :
 {
 		<NUM: (<DIGIT>)+ >
-		|  	<#DIGIT: ["0"-"9"] >
+		| < NAME: (< LM >| < Lm> )(< LM >| < Lm>| < DIGIT>)*>
+		| <#DIGIT: ["0"-"9"] >
+		| < #LM: ["A"-"Z"]>
+		| < #Lm: ["a"-"z"]>
         
 }
 
 
+	boolean One_line(Console sistema):
+	{	
+		GL= new HasMap();	
+	}
+	{
+	  < OPEN> Bloque(GL) < CLOSE>
+	 }
 
+	void Bloque(HasMap GL):
+	{}
+	{
+	  ( Variable()|Programa()|Intruccion()|Expression())*
+	}
+
+	void Variable(HasMap GL):
+	{}
+	{
+	  
+	}
+
+	void Instruccion(HasMap GL):
+	{}
+	{
+	  
+	}
+
+	void Programa(HasMap GL):
+	{}
+	{
+	 
+	}
+	
 	//boolean command(uniandes.lym.robot.view.Console sistema) :
 	boolean command(Console sistema):
 	{	
@@ -97,7 +141,8 @@ TOKEN :
 
 	
 	{
-		(		  (
+		(
+		  (
 		   <RIGHT> "(" ")" {world.turnRight();salida = "Command: Turnright";}
 		| 	<MOV>  "(" x=num() ")" {world.moveForward(x,false);salida = "Command: Moveforward ";}  
 		| 	<HOP>  "(" x=num() ")" {world.moveForward(x,true);salida = "Command:Jumpforward ";}
@@ -168,5 +213,4 @@ TOKEN :
 			return total;
 		}
 	}
-
 	
