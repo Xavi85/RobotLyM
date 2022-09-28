@@ -60,6 +60,7 @@ SKIP:
 TOKEN: /* Nombres de Comandos */
 {
 		<WALK:  "walk">
+		| < LEND: ";"> 
 		| < OPEN : "PROG">
 		| < CLOSE : "GROP">
 		| < OPROGRAM: "PROC">
@@ -107,28 +108,44 @@ TOKEN :
 	  < OPEN> Bloque(GL) < CLOSE>
 	 }
 
-	void Bloque(HasMap GL):
+	void Bloque(HasMap S):
 	{}
 	{
-	  ( Variable()|Programa()|Intruccion()|Expression())*
+	  ( Variable(S)|Programa(S)|Intruccion(S)|Expression(S))*
 	}
 
-	void Variable(HasMap GL):
+	void Variable(HasMap S):
 	{}
 	{
-	  
+	  < VAR >< NAME > (< COMMA>< NAME>)* < LEND>  
 	}
 
-	void Instruccion(HasMap GL):
+	void Instruccion(HasMap S):
 	{}
 	{
-	  
+	  (Ciclo(S)|Comando(S)) < LEND>
 	}
 
 	void Programa(HasMap GL):
 	{}
 	{
-	 
+	 < OPROGRAM >< NAME >< BRACKETO >< NAME >(< COMMA >< NAME >)*< BRACKETC >< CURBRACKETO > BloqueP(GL)< CURBRACKETC >< CPROGRAM >
+	}
+
+	void BloqueP(HasMap GL):
+	{
+		LS= new HasMap();
+	 }
+	 {
+	   (	     (Variable(LS)|Instrucction(LS)|Expresion(LS)) < LEND>
+	    )*
+	 }
+
+	void Comando(HasMap S):
+	{ }
+	{
+	  (
+	    Unitario(S)|Binario(S)	  )
 	}
 	
 	//boolean command(uniandes.lym.robot.view.Console sistema) :
