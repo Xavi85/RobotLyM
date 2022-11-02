@@ -6,6 +6,8 @@ Modificado por: Juan Pablo Morales.
 Agregadas producciones para manejar globos
 Modificado por Silvia Takahashi
 
+ULTIMA MOD:
+JAVIER SERRANO RODRIGUEZ - 202023012
 
  **/
 
@@ -15,38 +17,61 @@ options
   
 	LOOKAHEAD=1; 
 	IGNORE_CASE=true;
-	STATIC = false;
+	STATIC = true;
 	
 }
    
 
 PARSER_BEGIN(Robot)
-
 package uniandes.lym.robot.control;
 
 import uniandes.lym.robot.kernel.*;
 import uniandes.lym.robot.view.Console;
 
-import java.util.hasmap; 
+import java.util.HashMap;
 import java.awt.Point;
 import java.io.*;
 import java.util.Vector;
 import java.util.LinkedList;
 
 @SuppressWarnings("serial")
-public class Robot 
+
+public class Robot
 {
-
-
-	private RobotWorldDec world;
-	
-	
-	void setWorld(RobotWorld w) {
-		world = (RobotWorldDec) w;	
-	}
-
-	String salida=new String();
+  public static void main(String args []) throws ParseException
+  {
+    Robot parser = new Robot(System.in);
+    while (true)
+    {
+      System.out.println("Reading from standard input...");
+      System.out.print("Enter an expression like");
+      try
+      {
+        switch (Robot.one_line())
+        {
+          case 0 : 
+          System.out.println("OK.");
+          break;
+          default : 
+          break;
+        }
+      }
+      catch (Exception e)
+      {
+        System.out.println("NOK.");
+        System.out.println(e.getMessage());
+        Robot.ReInit(System.in);
+      }
+      catch (Error e)
+      {
+        System.out.println("Oops.");
+        System.out.println(e.getMessage());
+        break;
+      }
+    }
+  }
 }
+
 PARSER_END(Robot)
 
 SKIP:
@@ -62,9 +87,9 @@ TOKEN: /* Nombres de Comandos */
 		<WALK:  "walk">
 		| < LEND: ";"> 
 		| < OPEN : "PROG">
-		| < CLOSE : "GROP">
+		| < CLOSE : "GORP">
 		| < OPROGRAM: "PROC">
-		| < CPROGRAM: "CROP">
+		| < CPROGRAM: "CORP">
 		| < VAR: "VAR">
 		| < BRACKETO: "(">
 		| < BRACKETC: ")">
@@ -77,7 +102,33 @@ TOKEN: /* Nombres de Comandos */
 		| < OD: "od">
 		| < ELSE: "else">
 		| < WHILE: "while">
-		| < REPEAT: "repeat">
+		| < REPEAT: "repeat">	
+		| < MOV: "mov">
+		| < HOP: "hop">
+		| < GO: "go">
+		| < PUT: "put">
+		| < PICK: "pick">
+	    | < POP: "pop">
+	    | < JUMP : "jump" >
+		| < DROP : "drop">
+		| < GRAB : "grab">
+		| < GET : "get">
+		| < FREE : "free">
+		| < LOOK : "veer">
+		| < VEER : "look">
+		| < FRONT: "front" >
+		| < RIGHT:"right">
+		| < LEFT: "left">
+		| < BACK : "back" >
+		| < NORTH : "north" >
+		| < WEST : "west">
+		| < EAST : "east">
+		| < SOUTH : "south">
+		| < JUMPTO : "jumpTo">
+		| < ISFACING : "isfacing">
+		| < ISVALID : "isValid">  
+		| < CANWALK : "canWalk">
+		| < NOT :"not">
 }
 
 TOKEN:
@@ -100,60 +151,137 @@ TOKEN :
 }
 
 
-	boolean One_line(Console sistema):
+	int one_line():
 	{	
-		GL= new HasMap();	
+		HashMap GL = new HashMap();	
 	}
 	{
-	  < OPEN> Bloque(GL) < CLOSE>
+	  < OPEN> (Bloque(GL))? < CLOSE>
+{
+	   return 0;
+	}
 	 }
-
-	void Bloque(HasMap S):
+	 
+	void Bloque(HashMap S):
 	{}
 	{
-	  ( Variable(S)|Programa(S)|Intruccion(S)|Expression(S))*
+	  (Variable(S))*
+	   (Programa(S))+
+	  (Instruccion(S)|command())?
 	}
 
-	void Variable(HasMap S):
+	void Variable(HashMap S):
 	{}
 	{
-	  < VAR >< NAME > (< COMMA>< NAME>)* < LEND>  
+	  < VAR > < NAME > (< COMMA> < NAME>)* < LEND>  
 	}
 
-	void Instruccion(HasMap S):
+	void Programa(HashMap GL):
 	{}
 	{
-	  (Ciclo(S)|Comando(S)) < LEND>
+		< OPROGRAM >< NAME > < BRACKETO > (< NAME >(< COMMA >< NAME >)*)? < BRACKETC >< CURBRACKETO > BloqueP(GL)< CURBRACKETC >< CPROGRAM >
 	}
 
-	void Programa(HasMap GL):
-	{}
+	void BloqueP(HashMap GL):
 	{
-	 < OPROGRAM >< NAME >< BRACKETO >< NAME >(< COMMA >< NAME >)*< BRACKETC >< CURBRACKETO > BloqueP(GL)< CURBRACKETC >< CPROGRAM >
+		HashMap LS = new HashMap();
 	}
-
-	void BloqueP(HasMap GL):
 	{
-		LS= new HasMap();
-	 }
-	 {
-	   (	     (Variable(LS)|Instrucction(LS)|Expresion(LS)) < LEND>
-	    )*
-	 }
-
-	void Comando(HasMap S):
-	{ }
-	{
-	  (
-	    Unitario(S)|Binario(S)	  )
+		Instruccion(LS)
 	}
 	
+	void AVariable(HashMap LS):
+	{}
+	{
+		< NAME > "=" (< NAME > | < NUM >) < LEND >
+	}
+	void Instruccion(HashMap S):
+	{ }
+	{
+		(Expresion(S) | (Ciclo(S))+ | (Condicional (S))+)
+	}
+	void Expresion(HashMap S):
+	{ }
+	{
+	  (Unitario(S)|Binario(S)) (< LEND > (Unitario(S)|Binario(S)))*
+	}
+	
+	void Ciclo(HashMap S):
+	{ }
+	{
+		< WHILE > "(" condicion() ")" < DO > "{"(Instruccion(S))? "}"< OD >
+	}
+	void Condicional(HashMap S):
+	{ }
+	{
+		< IF > "(" condicion() ")"  "{"(Instruccion(S))? "}" < FI >	
+	}
+	void Unitario(HashMap GL):
+	{}
+	{
+		( ExpNum() | ExpDir(GL) | ExpOr(GL))
+	}
+	void condicion():
+	{ }
+	{
+		< ISFACING > "("orientacion()")"
+		| < ISVALID > "(" ExpNum() "," (< NUM >|< NAME >)")" 
+		| < CANWALK > "(" (orientacion()|direccion()) "," (< NUM >|< NAME >) ")"
+		| < NOT > "(" condicion()")"
+	}
+	void ExpNum():
+	{}
+	{
+		( < WALK > "("  (< NUM >|< NAME >) ")" { }
+		| < JUMP > "("  (< NUM >|< NAME >) ")" { }
+		| < DROP > "("  (< NUM >|< NAME >) ")" { }
+		| < GRAB > "("  (< NUM >|< NAME >) ")" { }
+		| < GET > "("  (< NUM >|< NAME >) ")" { }
+		| < FREE > "("  (< NUM >|< NAME >) ")" { }
+		| < POP > "("  (< NUM >|< NAME >) ")" { } 
+		)
+	}
+	void ExpDir(HashMap GL):
+	{}
+	{
+		( < LOOK > direccion()
+		)
+	}
+	void ExpOr(HashMap GL):
+	{}
+	{
+		( < VEER > orientacion()
+		)
+	}
+	void Binario(HashMap GL):
+	{}
+	{
+	( < JUMPTO > "("  < NUM >"," < NUM > ")"
+	|< WALK > "(" (direccion()| orientacion())"," <NUM > ")"
+	)
+	}
+	void direccion():
+	{}
+	{
+		< FRONT >
+		| < RIGHT >
+		| < LEFT >
+		| < BACK >
+	}
+	void orientacion():
+	{}
+	{
+		< NORTH >
+		| < WEST >
+		| < EAST >
+		| < SOUTH >
+	}
 	//boolean command(uniandes.lym.robot.view.Console sistema) :
-	boolean command(Console sistema):
+	boolean command():
 	{	
 		
 		int x,y;
-		salida=new String();	
+		String salida=new String();	
 	}
 
 	
@@ -176,7 +304,7 @@ TOKEN :
 	    			        System.err.format("IOException: %s%n", e);
 	    		    }
 	    			 
-			sistema.printOutput(salida);
+			System.out.println(salida);
 			return true;
 		})+
 
@@ -230,4 +358,5 @@ TOKEN :
 			return total;
 		}
 	}
+	
 	
